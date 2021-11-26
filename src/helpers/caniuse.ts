@@ -51,9 +51,12 @@ export function collectBrowserTargets(
 }
 
 // Returns a list of browser targets that do not support a feature.
-// In case feature stats are not found in the database, we will assume that the feature is supported.
-// This can result in false positives when querying for versions that may not have been released yet - possibly due to typo or user mistake
-// Since the equivalen
+// In case feature stats are not found in the database, we will assume that the feature is supported,
+// this can result in false positives when querying for versions that may not have been released yet (typo or user mistake)
+// Since the equivalent can happen in case of specifying some super old version, the proper way to possibly handle
+// this would be to throw an error, but since I dont know how often that happens or if it may cause false positives later on
+// if caniuse db changes... I'm leaning towards throwing an error here, but it's not the plugin's responsability to validate browserlist config - opinions are welcome.
+// TODO: check if browserlist throws an error lower in the stack if config is invalid, this would likely be the best solution
 export function collectUnsupportedTargets(id: string, targets: BrowserTarget[]): BrowserTarget[] {
   const data = lite.feature(lite.features[id]);
 
