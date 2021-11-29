@@ -22,7 +22,7 @@ function createContextReport(
   });
 }
 
-const noLookaheadLookbehindRule: Rule.RuleModule = {
+const noLookaheadLookbehindRegexp: Rule.RuleModule = {
   meta: {
     docs: {
       description: "disallow the use of lookahead and lookbehind regexes if unsupported by browser",
@@ -58,4 +58,4 @@ const noLookaheadLookbehindRule: Rule.RuleModule = {
   },
 };
 
-export { noLookaheadLookbehindRule };
+export { noLookaheadLookbehindRegexp };

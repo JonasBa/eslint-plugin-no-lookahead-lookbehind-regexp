@@ -5,9 +5,7 @@ const groups = ["?=", "?<=", "?!", "?<!"];
 describe("analyzeRegExpForLookaheadAndLookbehind", () => {
   it("does not return false positives for an escaped sequence", () => {
     for (const group of groups) {
-      expect(analyzeRegExpForLookaheadAndLookbehind(`\\(${group}`).length).toBe(
-        0
-      );
+      expect(analyzeRegExpForLookaheadAndLookbehind(`\\(${group}`).length).toBe(0);
     }
   });
 

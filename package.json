@@ -1,27 +1,38 @@
 {
   "name": "eslint-plugin-no-lookahead-lookbehind-regexp",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "repository": "git@github.com:JonasBa/eslint-plugin-no-lookahead-lookbehind-regexp.git",
   "author": "JonasBa <jonas@badalic.com>",
   "license": "MIT",
   "dependencies": {
-    "@types/eslint": "^8.2.0",
     "browserslist": "^4.18.1",
     "caniuse-lite": "^1.0.30001283",
     "eslint": "^8.3.0"
   },
   "devDependencies": {
+    "@types/benchmark": "^2.1.1",
     "@types/browserslist": "^4.15.0",
     "@types/caniuse-lite": "^1.0.1",
     "@types/jest": "^27.0.3",
+    "@types/eslint": "^8.2.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "benchmark": "^2.1.4",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-eslint-plugin": "^4.0.2",
+    "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.3.1",
+    "prettier": "^2.5.0",
     "ts-jest": "^27.0.7",
+    "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
   },
   "scripts": {
+    "build": "rm -rf ./lib && yarn tsc",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "benchmark": "ts-node test/benchmark.ts",
+    "tsc": "tsc"
   }
 }

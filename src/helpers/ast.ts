@@ -1,13 +1,13 @@
 import { Rule } from "eslint";
-import * as ESTree from "estree";
+import { Literal, RegExpLiteral } from "estree";
 
 export function isRegExpLiteral(
-  literal: ESTree.Literal & Rule.NodeParentExtension
-): literal is ESTree.RegExpLiteral & Rule.NodeParentExtension {
+  literal: Literal & Rule.NodeParentExtension
+): literal is RegExpLiteral & Rule.NodeParentExtension {
   return "regex" in literal;
 }
 
-export function isStringLiteralRegExp(literal: ESTree.Literal & Rule.NodeParentExtension) {
+export function isStringLiteralRegExp(literal: Literal & Rule.NodeParentExtension) {
   return (
     literal.parent !== null &&
     literal.parent.type === "NewExpression" &&

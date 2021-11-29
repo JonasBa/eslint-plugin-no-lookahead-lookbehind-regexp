@@ -1,5 +1,5 @@
 import { RuleTester } from "eslint";
-import { noLookaheadLookbehindRule } from "../src/rules/noLookaheadLookbehindRegex";
+import { noLookaheadLookbehindRegexp } from "../src/rules/noLookaheadLookbehindRegex";
 
 // Rule tester for when no browserlist is passed, so lookahead and lookbehind should not be allowed
 const tester = new RuleTester({
@@ -18,7 +18,7 @@ const groups = [
   { expression: "?<!", type: "negative lookbehind" },
 ];
 
-tester.run("noLookaheadLookbehindRegexp", noLookaheadLookbehindRule, {
+tester.run("noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, {
   valid: [
     // dont flag string values when they are not used in combination with RegExp
     ...groups.map((g) => `var str = "(${g.expression}foo)"`),
@@ -73,7 +73,7 @@ tester.run("noLookaheadLookbehindRegexp", noLookaheadLookbehindRule, {
   ],
 });
 
-tester.run("Caniuse: noLookaheadLookbehindRegexp", noLookaheadLookbehindRule, {
+tester.run("Caniuse: noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, {
   valid: [
     // dont flag escaped sequences
     ...groups.map((g) => {
