@@ -36,6 +36,7 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
     const { targets, hasConfig } = collectBrowserTargets(context.getFilename(), browsers);
     const unsupportedTargets = collectUnsupportedTargets("js-regexp-lookbehind", targets);
 
+    // If there are no unsupported targets resolved from the browserlist config, then we can skip this rule
     if (!unsupportedTargets.length && hasConfig) return {};
 
     return {
