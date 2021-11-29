@@ -35,3 +35,7 @@ We use [browserslist](https://github.com/browserslist/browserslist) to resolve b
 +    ]
   }
 ```
+
+### Contributing
+
+Be respectful, contributions of all sorts are well appreciated. If you have an issue with the package, file a descriptive issue with a reproducible case (if possible ofc). In case you want to improve the package or have ideas, file an issue before submitting a PR to avoid frustration in case we do not want to adopt the changes. Keep it positive ✌️

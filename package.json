@@ -4,12 +4,19 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "repository": "git@github.com:JonasBa/eslint-plugin-no-lookahead-lookbehind-regexp.git",
-  "author": "JonasBa <jonas@badalic.com>",
+  "author": "JonasBa <jonas@specto.dev>",
   "license": "MIT",
   "dependencies": {
     "browserslist": "^4.18.1",
     "caniuse-lite": "^1.0.30001283",
     "eslint": "^8.3.0"
+  },
+  "scripts": {
+    "build": "rm -rf ./lib && yarn tsc",
+    "test": "jest",
+    "tsc": "tsc",
+    "test:watch": "jest --watch",
+    "benchmark": "ts-node test/benchmark.ts"
   },
   "devDependencies": {
     "@types/benchmark": "^2.1.1",
@@ -27,12 +34,5 @@
     "ts-jest": "^27.0.7",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
-  },
-  "scripts": {
-    "build": "rm -rf ./lib && yarn tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "benchmark": "ts-node test/benchmark.ts",
-    "tsc": "tsc"
   }
 }
