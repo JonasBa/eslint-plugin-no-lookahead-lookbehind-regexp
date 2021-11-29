@@ -12,11 +12,11 @@
     "eslint": "^8.3.0"
   },
   "scripts": {
+    "benchmark": "ts-node test/benchmark.ts",
     "build": "rm -rf ./lib && yarn tsc",
-    "test": "jest",
     "tsc": "tsc",
-    "test:watch": "jest --watch",
-    "benchmark": "ts-node test/benchmark.ts"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "devDependencies": {
     "@types/benchmark": "^2.1.1",

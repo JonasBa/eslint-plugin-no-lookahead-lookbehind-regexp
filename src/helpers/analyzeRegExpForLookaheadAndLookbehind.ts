@@ -6,7 +6,7 @@ type UnsupportedExpression = {
 
 function analyzeRegExpForLookaheadAndLookbehind(input: string): UnsupportedExpression[] {
   // Lookahead and lookbehind require min 5 characters to be useful, however
-  // an expression like /(?=)/ which uses only 4, can still crash an application
+  // an expression like /(?=)/ which uses only 4, although not useful, can still crash an application
   if (input.length < 4) return [];
 
   let current = 0;
