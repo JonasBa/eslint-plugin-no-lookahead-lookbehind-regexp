@@ -42,10 +42,17 @@ export function collectBrowserTargets(
   }
 
   // If they only use an eslint config, then return what we have
-  if (targets.size > 0) {
+  if (targets.size > 0 && !browserslist.findConfig(configPath)) {
     return { targets: Array.from(targets).map(transformTarget), hasConfig: true };
   }
 
+  // ** Warning
+  // If they dont use a browserlist config, then return an empty targets array and disable the use of the regexp lookahead and lookbehind entirely.
+  if (!browserslist.findConfig(configPath)) {
+    return { targets: [], hasConfig: false };
+  }
+
+  browserslist(undefined, { path: configPath }).forEach(addTarget);
   // If we couldnt find anything, return empty targets and indicate that no config was found
   return { targets: Array.from(targets).map(transformTarget), hasConfig: false };
 }
