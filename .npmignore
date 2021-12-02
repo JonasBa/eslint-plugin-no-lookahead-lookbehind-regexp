@@ -1,0 +1,16 @@
+# Let's not waste bandwidth for unnecessary files.
+src/
+test/
+
+*.gif
+*.png
+
+jest.config.js
+.eslintrc.js
+.gitignore
+.prettierrc
+tsconfig.json
+yarn.lock
+
+CODE_OF_CONDUCT.md
+README.md
