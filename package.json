@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-no-lookahead-lookbehind-regexp",
-  "version": "0.0.0",
+  "version": "0.0.1-beta.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "repository": "git@github.com:JonasBa/eslint-plugin-no-lookahead-lookbehind-regexp.git",
@@ -23,8 +23,8 @@
     "@types/benchmark": "^2.1.1",
     "@types/browserslist": "^4.15.0",
     "@types/caniuse-lite": "^1.0.1",
-    "@types/jest": "^27.0.3",
     "@types/eslint": "^8.2.0",
+    "@types/jest": "^27.0.3",
     "@typescript-eslint/parser": "^5.4.0",
     "benchmark": "^2.1.4",
     "eslint-config-prettier": "^8.3.0",
