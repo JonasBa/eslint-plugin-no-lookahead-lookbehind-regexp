@@ -12,5 +12,7 @@ jest.config.js
 tsconfig.json
 yarn.lock
 
+node_modules/
+
 CODE_OF_CONDUCT.md
 README.md
