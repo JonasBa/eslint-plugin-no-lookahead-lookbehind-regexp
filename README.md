@@ -1,9 +1,8 @@
+# eslint-plugin-no-lookahead-lookbehind-regexp
 
-eslint-plugin-no-lookahead-lookbehind-regexp
-==============================
 <img src="https://github.com/JonasBa/eslint-plugin-no-lookahead-lookbehind-regexp/blob/main/example.gif?raw=true" width="70%"/>
 
-Lint the use of lookahead and lookbehind regexp expression. The expression is problematic, as compiling it in an unsupported browser will throw an error and possibly crash your browser. The plugin handles both [literal and constructor notation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#literal_notation_and_constructor).
+Lint the use of lookahead and lookbehind regexp expression. The expression is problematic, as compiling it in an unsupported browser will throw an error and possibly crash your browser. The plugin handles both Regexp [literal and constructor notations](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#literal_notation_and_constructor).
 
 ### 1. Install
 

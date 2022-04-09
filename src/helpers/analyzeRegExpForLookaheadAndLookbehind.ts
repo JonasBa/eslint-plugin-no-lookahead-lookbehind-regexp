@@ -1,14 +1,26 @@
+export type CheckableExpression =
+  | "lookahead"
+  | "lookbehind"
+  | "negative-lookahead"
+  | "negative-lookbehind";
+
+export type AnalyzeOptions = {
+  rules: Partial<{ [key in `no-${CheckableExpression}`]: 0 | 1 }>;
+};
+
 type UnsupportedExpression = {
   type: "lookahead" | "lookbehind";
   negative?: 1;
   position: number;
 };
 
-function analyzeRegExpForLookaheadAndLookbehind(input: string): UnsupportedExpression[] {
+function analyzeRegExpForLookaheadAndLookbehind(
+  input: string,
+  options: AnalyzeOptions
+): UnsupportedExpression[] {
   // Lookahead and lookbehind require min 5 characters to be useful, however
   // an expression like /(?=)/ which uses only 4, although not useful, can still crash an application
   if (input.length < 4) return [];
-
   let current = 0;
 
   const peek = (): string => input.charAt(current + 1);
@@ -35,45 +47,53 @@ function analyzeRegExpForLookaheadAndLookbehind(input: string): UnsupportedExpre
 
           // Lookahead
           if (peek() === "=") {
-            matchedExpressions.push({
-              type: "lookahead",
-              position: start,
-            });
+            if (options.rules["no-lookahead"]) {
+              matchedExpressions.push({
+                type: "lookahead",
+                position: start,
+              });
+            }
             advance();
             break;
           }
           // Negative lookahead
           if (peek() === "!") {
-            matchedExpressions.push({
-              type: "lookahead",
-              negative: 1,
-              position: start,
-            });
+            if (options.rules["no-negative-lookahead"]) {
+              matchedExpressions.push({
+                type: "lookahead",
+                negative: 1,
+                position: start,
+              });
+            }
             advance();
             break;
           }
 
+          // Lookbehind
           if (peek() === "<") {
-            // Lookbehind
             if (input.charAt(current + 2) === "=") {
-              matchedExpressions.push({
-                type: "lookbehind",
-                position: start,
-              });
-              advance();
-              advance();
-              break;
+              if (options.rules["no-lookbehind"]) {
+                matchedExpressions.push({
+                  type: "lookbehind",
+                  position: start,
+                });
+                advance();
+                advance();
+                break;
+              }
             }
             // Negative Lookbehind
             if (input.charAt(current + 2) === "!") {
-              matchedExpressions.push({
-                type: "lookbehind",
-                negative: 1,
-                position: start,
-              });
-              advance();
-              advance();
-              break;
+              if (options.rules["no-negative-lookbehind"]) {
+                matchedExpressions.push({
+                  type: "lookbehind",
+                  negative: 1,
+                  position: start,
+                });
+                advance();
+                advance();
+                break;
+              }
             }
           }
         } else {
