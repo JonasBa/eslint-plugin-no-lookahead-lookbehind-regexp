@@ -2,25 +2,10 @@ import { Rule } from "eslint";
 import * as ESTree from "estree";
 
 import { analyzeRegExpForLookaheadAndLookbehind } from "./../helpers/analyzeRegExpForLookAheadAndLookbehind";
-import {
-  collectBrowserTargets,
-  collectUnsupportedTargets,
-  formatLinterMessage,
-} from "./../helpers/caniuse";
+import { collectBrowserTargets, collectUnsupportedTargets } from "./../helpers/caniuse";
 
 import { isStringLiteralRegExp, isRegExpLiteral } from "./../helpers/ast";
-
-function createContextReport(
-  node: ESTree.Literal & Rule.NodeParentExtension,
-  context: Rule.RuleContext,
-  violators: ReturnType<typeof analyzeRegExpForLookaheadAndLookbehind>,
-  targets: ReturnType<typeof collectUnsupportedTargets>
-): void {
-  context.report({
-    node: node,
-    message: formatLinterMessage(violators, targets),
-  });
-}
+import { createContextReport } from "../helpers/createReport";
 
 const noLookaheadLookbehindRegexp: Rule.RuleModule = {
   meta: {
@@ -39,8 +24,10 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
     // If there are no unsupported targets resolved from the browserlist config, then we can skip this rule
     if (!unsupportedTargets.length && hasConfig) return {};
 
+    console.log(context);
+
     return {
-      Literal(node) {
+      Literal(node: ESTree.Literal & Rule.NodeParentExtension): void {
         if (isStringLiteralRegExp(node) && typeof node.raw === "string") {
           const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(
             node.raw // For string literals, we need to pass the raw value which includes escape characters.

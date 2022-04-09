@@ -2,8 +2,8 @@ import Benchmark from "benchmark";
 import { ESLint } from "eslint";
 import fs from "fs";
 
+// Save the contents of our old pkg json to a variable
 const packageJSON = JSON.parse(fs.readFileSync("./package.json", "utf8").toString());
-
 process.on("uncaughtException", () => {
   fs.writeFileSync("./package.json", JSON.stringify({ ...packageJSON }, undefined, 2));
 });

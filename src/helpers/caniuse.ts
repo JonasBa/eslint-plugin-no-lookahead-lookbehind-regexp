@@ -116,7 +116,7 @@ export function formatLinterMessage(
   violators: ReturnType<typeof analyzeRegExpForLookaheadAndLookbehind>,
   targets: ReturnType<typeof collectUnsupportedTargets>
 ): string {
-  // If browser has no targets and we still want to report an error, it means that the feature is not enabled at all
+  // If browser has no targets and we still want to report an error, it means that the feature is banned from use.
   if (!targets.length) {
     if (violators.length === 1) {
       return `Disallowed ${violators[0].negative ? "negative " : ""}${
