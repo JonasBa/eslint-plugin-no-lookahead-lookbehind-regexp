@@ -1,11 +1,19 @@
-import { analyzeRegExpForLookaheadAndLookbehind } from "./analyzeRegExpForLookaheadAndLookbehind";
+import { getExpressionsToCheckFromConfiguration } from "../rules/noLookaheadLookbehindRegex";
+import {
+  analyzeRegExpForLookaheadAndLookbehind,
+  CheckableExpression,
+} from "./analyzeRegExpForLookaheadAndLookbehind";
 
 const groups = ["?=", "?<=", "?!", "?<!"];
 
 describe("analyzeRegExpForLookaheadAndLookbehind", () => {
   it("does not return false positives for an escaped sequence", () => {
     for (const group of groups) {
-      expect(analyzeRegExpForLookaheadAndLookbehind(`\\(${group}`).length).toBe(0);
+      expect(
+        analyzeRegExpForLookaheadAndLookbehind(`\\(${group}`, {
+          rules: getExpressionsToCheckFromConfiguration([]),
+        }).length
+      ).toBe(0);
     }
   });
 
@@ -15,7 +23,11 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
     ["lookbehind", 0, "(?<=)"],
     ["negative lookbehind", 0, "(?<!)"],
   ])(`Single match %s - at %i`, (type, position, expression) => {
-    expect(analyzeRegExpForLookaheadAndLookbehind(expression)[0]).toEqual({
+    expect(
+      analyzeRegExpForLookaheadAndLookbehind(expression, {
+        rules: getExpressionsToCheckFromConfiguration([]),
+      })[0]
+    ).toEqual({
       type: type.replace("negative ", ""),
       position: position,
       ...(type.includes("negative") ? { negative: 1 } : {}),
@@ -28,7 +40,11 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
     ["lookbehind", 0, 8, "(?<=t).*(?<=t)"],
     ["negative lookbehind", 0, 8, "(?<!t).*(?<!t)"],
   ])(`Multiple match %s - at %i and %i`, (type, first, second, expression) => {
-    expect(analyzeRegExpForLookaheadAndLookbehind(expression)).toEqual([
+    expect(
+      analyzeRegExpForLookaheadAndLookbehind(expression, {
+        rules: getExpressionsToCheckFromConfiguration([]),
+      })
+    ).toEqual([
       {
         type: type.replace("negative ", ""),
         position: first,
@@ -40,5 +56,43 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
         ...(type.includes("negative") ? { negative: 1 } : {}),
       },
     ]);
+  });
+
+  it.each([
+    ["no-lookahead"],
+    ["no-negative-lookahead"],
+    ["no-lookbehind"],
+    ["no-negative-lookbehind"],
+  ])("Does not warn if %s rule is disabled", (rule) => {
+    const expressions: Record<CheckableExpression | string, string> = {
+      "no-lookahead": "(?=test)",
+      "no-lookbehind": "(?<=test)",
+      "no-negative-lookahead": "(?!test)",
+      "no-negative-lookbehind": "(?<!test)",
+    };
+
+    if (!expressions[rule as CheckableExpression]) throw new Error(`No test for ${rule}`);
+
+    for (const expression in expressions) {
+      if (rule === expression) {
+        expect(
+          analyzeRegExpForLookaheadAndLookbehind(expressions[expression], {
+            rules: { [expression]: 0 },
+          })
+        ).toEqual([]);
+      } else {
+        expect(
+          analyzeRegExpForLookaheadAndLookbehind(expressions[expression], {
+            rules: getExpressionsToCheckFromConfiguration([]),
+          })
+        ).toEqual([
+          {
+            position: 0,
+            type: expression.replace("no-", "").replace("negative-", ""),
+            ...(expression.startsWith("no-negative") ? { negative: 1 } : {}),
+          },
+        ]);
+      }
+    }
   });
 });
