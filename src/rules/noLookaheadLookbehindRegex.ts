@@ -5,9 +5,9 @@ import {
   analyzeRegExpForLookaheadAndLookbehind,
   AnalyzeOptions,
   CheckableExpression,
-} from "./../helpers/analyzeRegExpForLookAheadAndLookbehind";
-import { collectBrowserTargets, collectUnsupportedTargets } from "./../helpers/caniuse";
-import { isStringLiteralRegExp, isRegExpLiteral } from "./../helpers/ast";
+} from "../helpers/analyzeRegExpForLookaheadAndLookbehind";
+import { collectBrowserTargets, collectUnsupportedTargets } from "../helpers/caniuse";
+import { isStringLiteralRegExp, isRegExpLiteral } from "../helpers/ast";
 import { createContextReport } from "../helpers/createReport";
 
 export const DEFAULT_OPTIONS: AnalyzeOptions["rules"] = {
@@ -18,20 +18,23 @@ export const DEFAULT_OPTIONS: AnalyzeOptions["rules"] = {
 };
 
 export const getExpressionsToCheckFromConfiguration = (
-  options: Rule.RuleContext["options"]
-): AnalyzeOptions["rules"] => {
-  if (!options.length) return DEFAULT_OPTIONS;
+  conf: Rule.RuleContext["options"]
+): { rules: AnalyzeOptions["rules"]; useBrowserslist: boolean } => {
+  if (!conf.length) return { rules: DEFAULT_OPTIONS, useBrowserslist: true };
+  const [options, useBrowserslist = true] = conf as [AnalyzeOptions["rules"], boolean];
 
-  const validOptions: CheckableExpression[] = options.filter((option: unknown) => {
+  const validOptions: CheckableExpression[] = (
+    Object.keys(options || {}) as CheckableExpression[]
+  ).filter((option: unknown) => {
     if (typeof option !== "string") return false;
-    return DEFAULT_OPTIONS[option as keyof typeof DEFAULT_OPTIONS];
+    return option in DEFAULT_OPTIONS && options[option as keyof typeof DEFAULT_OPTIONS];
   });
 
   if (!validOptions.length) {
-    return DEFAULT_OPTIONS;
+    return { rules: DEFAULT_OPTIONS, useBrowserslist };
   }
 
-  return validOptions.reduce<AnalyzeOptions["rules"]>(
+  const expressions = validOptions.reduce<AnalyzeOptions["rules"]>(
     (acc: AnalyzeOptions["rules"], opt) => {
       acc[opt as keyof typeof DEFAULT_OPTIONS] = 1;
       return acc;
@@ -43,12 +46,17 @@ export const getExpressionsToCheckFromConfiguration = (
       "no-negative-lookbehind": 0,
     }
   );
+  return {
+    rules: expressions,
+    useBrowserslist,
+  };
 };
 
 const noLookaheadLookbehindRegexp: Rule.RuleModule = {
   meta: {
     docs: {
-      description: "disallow the use of lookahead and lookbehind regexes if unsupported by browser",
+      description:
+        "disallow the use of lookahead and lookbehind regular expressions if unsupported by browser",
       category: "Compatibility",
       recommended: true,
     },
@@ -57,27 +65,32 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
   create(context: Rule.RuleContext) {
     const browsers = context.settings.browsers || context.settings.targets;
     const { targets, hasConfig } = collectBrowserTargets(context.getFilename(), browsers);
+    // Lookahead assertions are part of JavaScript's original regular expression support and are thus supported in all browsers.
     const unsupportedTargets = collectUnsupportedTargets("js-regexp-lookbehind", targets);
-    const rules = getExpressionsToCheckFromConfiguration(context.options);
+    const { rules, useBrowserslist } = getExpressionsToCheckFromConfiguration(context.options);
 
-    // If there are no unsupported targets resolved from the browserlist config, then we can skip this rule
+    // If there are no unsupported targets resolved from the browserslist config, then we can skip this rule
     if (!unsupportedTargets.length && hasConfig) return {};
 
     return {
       Literal(node: ESTree.Literal & Rule.NodeParentExtension): void {
+        let input: string = "";
         if (isStringLiteralRegExp(node) && typeof node.raw === "string") {
-          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(
-            node.raw,
-            { rules } // For string literals, we need to pass the raw value which includes escape characters.
-          );
-          if (unsupportedGroups.length > 0) {
-            createContextReport(node, context, unsupportedGroups, unsupportedTargets);
-          }
+          // For string literals, we need to pass the raw value which includes escape characters.
+          input = node.raw;
         } else if (isRegExpLiteral(node)) {
-          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(node.regex.pattern, {
+          input = node.regex.pattern;
+        }
+        if (input) {
+          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(input, {
             rules,
           });
-          if (unsupportedGroups.length > 0) {
+          if (unsupportedGroups.length === 0) return;
+          if (!useBrowserslist) {
+            createContextReport(node, context, unsupportedGroups, unsupportedTargets);
+            return;
+          }
+          if (unsupportedGroups.some((group) => group.type === "lookbehind")) {
             createContextReport(node, context, unsupportedGroups, unsupportedTargets);
           }
         }

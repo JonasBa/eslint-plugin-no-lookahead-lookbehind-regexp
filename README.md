@@ -39,28 +39,32 @@ We use [browserslist](https://github.com/browserslist/browserslist) to resolve b
 
 ## 4. Customizing rules
 
-By default, the plugin will report on all lookahead and lookbehind regexp as well as their negative counterparts. To enable only individual rules like erroring only on lookbehind expressions, you can pass a list of rules that you wish to enable as options in your eslint. **Note that once a single rule is passed as a configuration option, all of the other rules are disabled by default and you are in full control.**
+By default, the plugin will report on all lookahead and lookbehind regexp as well as their negative counterparts(if they are not supported with above browserslist target settings). To enable only individual rules like erroring only on lookbehind expressions, you can pass a list of rules that you wish to enable as options in your eslint. **Note that once a single rule is passed as a configuration option, all of the other rules are disabled by default and you are in full control.**
 
 ```js
 rules: {
    'no-lookahead-lookbehind-regexp/no-lookahead-lookbehind-regexp': [
       'error',
-      'no-lookahead',
-      'no-lookbehind',
-      'no-negative-lookahead',
-      'no-negative-lookbehind',
+      {
+         'no-lookahead': 1,
+         'no-negative-lookbehind': 1,
+      }
    ],
 }
 ```
 
-As an example, passing both no-lookbehind and no-negative-lookbehind as options will cause the plugin to error on all lookbehind and negative lookbehind expressions, but it will not cause it to report errors on lookahead or negative lookahead expressions.
+## 5. Disable Browserslist Support
+
+By default, the plugin will use yours project's browserslist settings to find availability of lookahead/lookbehind and their negative bros. However, if you want to disable this feature to report all usages as errors, you can pass a second rule options as false.
 
 ```js
 rules: {
    'no-lookahead-lookbehind-regexp/no-lookahead-lookbehind-regexp': [
       'error',
-      'no-lookbehind',
-      'no-negative-lookbehind',
+      {
+         'no-lookahead': 1,
+      },
+      false
    ],
 }
 ```

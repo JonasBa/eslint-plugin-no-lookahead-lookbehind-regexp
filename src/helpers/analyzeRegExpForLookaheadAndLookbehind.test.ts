@@ -11,7 +11,7 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
     for (const group of groups) {
       expect(
         analyzeRegExpForLookaheadAndLookbehind(`\\(${group}`, {
-          rules: getExpressionsToCheckFromConfiguration([]),
+          rules: getExpressionsToCheckFromConfiguration([]).rules,
         }).length
       ).toBe(0);
     }
@@ -25,7 +25,7 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
   ])(`Single match %s - at %i`, (type, position, expression) => {
     expect(
       analyzeRegExpForLookaheadAndLookbehind(expression, {
-        rules: getExpressionsToCheckFromConfiguration([]),
+        rules: getExpressionsToCheckFromConfiguration([]).rules,
       })[0]
     ).toEqual({
       type: type.replace("negative ", ""),
@@ -42,7 +42,7 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
   ])(`Multiple match %s - at %i and %i`, (type, first, second, expression) => {
     expect(
       analyzeRegExpForLookaheadAndLookbehind(expression, {
-        rules: getExpressionsToCheckFromConfiguration([]),
+        rules: getExpressionsToCheckFromConfiguration([]).rules,
       })
     ).toEqual([
       {
@@ -83,7 +83,7 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
       } else {
         expect(
           analyzeRegExpForLookaheadAndLookbehind(expressions[expression], {
-            rules: getExpressionsToCheckFromConfiguration([]),
+            rules: getExpressionsToCheckFromConfiguration([]).rules,
           })
         ).toEqual([
           {
