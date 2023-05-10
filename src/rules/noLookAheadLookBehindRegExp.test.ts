@@ -1,7 +1,7 @@
 import { RuleTester } from "eslint";
 import { noLookaheadLookbehindRegexp } from "./noLookaheadLookbehindRegex";
 
-// Rule tester for when no browserlist is passed, so lookahead and lookbehind should not be allowed
+// Rule tester for when no browserslist is passed, so lookahead and lookbehind should not be allowed
 const tester = new RuleTester({
   parser: require.resolve("@typescript-eslint/parser"),
   parserOptions: {
