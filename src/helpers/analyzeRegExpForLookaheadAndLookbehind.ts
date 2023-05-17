@@ -6,7 +6,7 @@ export type CheckableExpression =
 
 export type AnalyzeOptions = {
   rules: Partial<{ [key in `no-${CheckableExpression}`]: 0 | 1 }>;
-  conf: Partial<{ browserslist: boolean }>;
+  config: Partial<{ browserslist: boolean }>;
 };
 
 type UnsupportedExpression = {

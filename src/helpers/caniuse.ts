@@ -1,7 +1,10 @@
 import browserslist from "browserslist";
 import * as lite from "caniuse-lite";
 
-import { analyzeRegExpForLookaheadAndLookbehind } from "./analyzeRegExpForLookaheadAndLookbehind";
+import {
+  analyzeRegExpForLookaheadAndLookbehind,
+  AnalyzeOptions,
+} from "./analyzeRegExpForLookaheadAndLookbehind";
 
 type BrowserTarget = {
   target: string;
@@ -116,9 +119,11 @@ export function resolveCaniUseBrowserTarget(target: string): string {
 
 export function formatLinterMessage(
   violators: ReturnType<typeof analyzeRegExpForLookaheadAndLookbehind>,
-  targets: ReturnType<typeof collectUnsupportedTargets>): string {
+  targets: ReturnType<typeof collectUnsupportedTargets>,
+  config: AnalyzeOptions["config"]
+): string {
   // If browser has no targets and we still want to report an error, it means that the feature is banned from use.
-  if (!targets.length) {
+  if (!targets.length || !config.browserslist) {
     if (violators.length === 1) {
       return `Disallowed ${violators[0].negative ? "negative " : ""}${
         violators[0].type

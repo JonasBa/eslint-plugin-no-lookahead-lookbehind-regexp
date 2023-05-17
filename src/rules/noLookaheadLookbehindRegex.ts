@@ -17,7 +17,7 @@ export const DEFAULT_OPTIONS: AnalyzeOptions["rules"] = {
   "no-negative-lookbehind": 1,
 };
 
-export const DEFAULT_CONF: AnalyzeOptions["conf"] = {
+export const DEFAULT_CONF: AnalyzeOptions["config"] = {
   browserslist: true,
 };
 
@@ -27,13 +27,14 @@ function isPlainObject(obj: any) {
 
 export const getExpressionsToCheckFromConfiguration = (
   options: Rule.RuleContext["options"]
-): { rules: AnalyzeOptions["rules"]; conf: AnalyzeOptions["conf"] } => {
-  if (!options.length) return { rules: DEFAULT_OPTIONS, conf: DEFAULT_CONF };
+): { rules: AnalyzeOptions["rules"]; config: AnalyzeOptions["config"] } => {
+  if (!options.length) return { rules: DEFAULT_OPTIONS, config: DEFAULT_CONF };
   let rules: CheckableExpression[] = options;
-  let conf: AnalyzeOptions["conf"] = {};
+  let config: AnalyzeOptions["config"] = {};
+
   if (isPlainObject(options[options.length - 1])) {
     rules = options.slice(0, -1);
-    conf = options[options.length - 1];
+    config = options[options.length - 1];
   }
 
   const validOptions: CheckableExpression[] = rules.filter((option: unknown) => {
@@ -42,7 +43,7 @@ export const getExpressionsToCheckFromConfiguration = (
   });
 
   if (!validOptions.length) {
-    return { rules: DEFAULT_OPTIONS, conf };
+    return { rules: DEFAULT_OPTIONS, config };
   }
 
   const expressions = validOptions.reduce<AnalyzeOptions["rules"]>(
@@ -59,7 +60,7 @@ export const getExpressionsToCheckFromConfiguration = (
   );
   return {
     rules: expressions,
-    conf,
+    config,
   };
 };
 
@@ -78,32 +79,28 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
     const { targets, hasConfig } = collectBrowserTargets(context.getFilename(), browsers);
     // Lookahead assertions are part of JavaScript's original regular expression support and are thus supported in all browsers.
     const unsupportedTargets = collectUnsupportedTargets("js-regexp-lookbehind", targets);
-    const {
-      rules,
-      conf: { browserslist },
-    } = getExpressionsToCheckFromConfiguration(context.options);
+    const { rules, config } = getExpressionsToCheckFromConfiguration(context.options);
 
-    // If there are no unsupported targets resolved from the browserslist config, then we can skip this rule
+    // If there are no unsupported targets resolved from the browserlist config, then we can skip this rule
     if (!unsupportedTargets.length && hasConfig) return {};
 
     return {
       Literal(node: ESTree.Literal & Rule.NodeParentExtension): void {
-        let input: string = "";
         if (isStringLiteralRegExp(node) && typeof node.raw === "string") {
-          // For string literals, we need to pass the raw value which includes escape characters.
-          input = node.raw;
-        } else if (isRegExpLiteral(node)) {
-          input = node.regex.pattern;
-        }
-        if (input) {
-          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(input, rules);
-          if (unsupportedGroups.length === 0) return;
-          if (!browserslist) {
-            createContextReport(node, context, unsupportedGroups, unsupportedTargets);
-            return;
+          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(
+            node.raw,
+            rules // For string literals, we need to pass the raw value which includes escape characters.
+          );
+          if (unsupportedGroups.length > 0) {
+            createContextReport(node, context, unsupportedGroups, unsupportedTargets, config);
           }
-          if (unsupportedGroups.some((group) => group.type === "lookbehind")) {
-            createContextReport(node, context, unsupportedGroups, unsupportedTargets);
+        } else if (isRegExpLiteral(node)) {
+          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(
+            node.regex.pattern,
+            rules
+          );
+          if (unsupportedGroups.length > 0) {
+            createContextReport(node, context, unsupportedGroups, unsupportedTargets, config);
           }
         }
       },

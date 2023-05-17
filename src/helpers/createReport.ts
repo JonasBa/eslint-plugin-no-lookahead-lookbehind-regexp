@@ -1,7 +1,10 @@
 import * as ESTree from "estree";
 import { Rule } from "eslint";
 
-import { analyzeRegExpForLookaheadAndLookbehind } from "../helpers/analyzeRegExpForLookaheadAndLookbehind";
+import {
+  AnalyzeOptions,
+  analyzeRegExpForLookaheadAndLookbehind,
+} from "../helpers/analyzeRegExpForLookaheadAndLookbehind";
 import { collectUnsupportedTargets, formatLinterMessage } from "../helpers/caniuse";
 
 export function createContextReport(
@@ -9,9 +12,10 @@ export function createContextReport(
   context: Rule.RuleContext,
   violators: ReturnType<typeof analyzeRegExpForLookaheadAndLookbehind>,
   targets: ReturnType<typeof collectUnsupportedTargets>,
+  config: AnalyzeOptions["config"]
 ): void {
   context.report({
     node: node,
-    message: formatLinterMessage(violators, targets),
+    message: formatLinterMessage(violators, targets, config),
   });
 }
