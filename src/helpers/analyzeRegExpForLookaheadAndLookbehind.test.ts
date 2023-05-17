@@ -10,9 +10,10 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
   it("does not return false positives for an escaped sequence", () => {
     for (const group of groups) {
       expect(
-        analyzeRegExpForLookaheadAndLookbehind(`\\(${group}`, {
-          rules: getExpressionsToCheckFromConfiguration([]),
-        }).length
+        analyzeRegExpForLookaheadAndLookbehind(
+          `\\(${group}`,
+          getExpressionsToCheckFromConfiguration([]).rules
+        ).length
       ).toBe(0);
     }
   });
@@ -24,9 +25,10 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
     ["negative lookbehind", 0, "(?<!)"],
   ])(`Single match %s - at %i`, (type, position, expression) => {
     expect(
-      analyzeRegExpForLookaheadAndLookbehind(expression, {
-        rules: getExpressionsToCheckFromConfiguration([]),
-      })[0]
+      analyzeRegExpForLookaheadAndLookbehind(
+        expression,
+        getExpressionsToCheckFromConfiguration([]).rules
+      )[0]
     ).toEqual({
       type: type.replace("negative ", ""),
       position: position,
@@ -41,9 +43,10 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
     ["negative lookbehind", 0, 8, "(?<!t).*(?<!t)"],
   ])(`Multiple match %s - at %i and %i`, (type, first, second, expression) => {
     expect(
-      analyzeRegExpForLookaheadAndLookbehind(expression, {
-        rules: getExpressionsToCheckFromConfiguration([]),
-      })
+      analyzeRegExpForLookaheadAndLookbehind(
+        expression,
+        getExpressionsToCheckFromConfiguration([]).rules
+      )
     ).toEqual([
       {
         type: type.replace("negative ", ""),
@@ -76,15 +79,14 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
     for (const expression in expressions) {
       if (rule === expression) {
         expect(
-          analyzeRegExpForLookaheadAndLookbehind(expressions[expression], {
-            rules: { [expression]: 0 },
-          })
+          analyzeRegExpForLookaheadAndLookbehind(expressions[expression], { [expression]: 0 })
         ).toEqual([]);
       } else {
         expect(
-          analyzeRegExpForLookaheadAndLookbehind(expressions[expression], {
-            rules: getExpressionsToCheckFromConfiguration([]),
-          })
+          analyzeRegExpForLookaheadAndLookbehind(
+            expressions[expression],
+            getExpressionsToCheckFromConfiguration([]).rules
+          )
         ).toEqual([
           {
             position: 0,

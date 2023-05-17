@@ -21,7 +21,7 @@ const config = {
 
 const eslint = new ESLint(config);
 const benchmark = new Benchmark(
-  "ESLint self benchmark w/o browserlist",
+  "ESLint self benchmark w/o browserslist",
   (deferred: { resolve: Function }) => {
     eslint
       .lintFiles("src/**/*.ts")
@@ -63,7 +63,7 @@ eslint
   });
 
 const browserlistBenchmark = new Benchmark(
-  "ESLint self benchmark with browserlist",
+  "ESLint self benchmark with browserslist",
   (deferred: { resolve: Function; reject: Function }) => {
     eslint
       .lintFiles("src/**/*.ts")

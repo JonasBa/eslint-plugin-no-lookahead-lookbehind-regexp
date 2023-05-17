@@ -6,6 +6,7 @@ export type CheckableExpression =
 
 export type AnalyzeOptions = {
   rules: Partial<{ [key in `no-${CheckableExpression}`]: 0 | 1 }>;
+  conf: Partial<{ browserslist: boolean }>;
 };
 
 type UnsupportedExpression = {
@@ -16,7 +17,7 @@ type UnsupportedExpression = {
 
 function analyzeRegExpForLookaheadAndLookbehind(
   input: string,
-  options: AnalyzeOptions
+  rules: AnalyzeOptions["rules"]
 ): UnsupportedExpression[] {
   // Lookahead and lookbehind require min 5 characters to be useful, however
   // an expression like /(?=)/ which uses only 4, although not useful, can still crash an application
@@ -47,7 +48,7 @@ function analyzeRegExpForLookaheadAndLookbehind(
 
           // Lookahead
           if (peek() === "=") {
-            if (options.rules["no-lookahead"]) {
+            if (rules["no-lookahead"]) {
               matchedExpressions.push({
                 type: "lookahead",
                 position: start,
@@ -58,7 +59,7 @@ function analyzeRegExpForLookaheadAndLookbehind(
           }
           // Negative lookahead
           if (peek() === "!") {
-            if (options.rules["no-negative-lookahead"]) {
+            if (rules["no-negative-lookahead"]) {
               matchedExpressions.push({
                 type: "lookahead",
                 negative: 1,
@@ -72,7 +73,7 @@ function analyzeRegExpForLookaheadAndLookbehind(
           // Lookbehind
           if (peek() === "<") {
             if (input.charAt(current + 2) === "=") {
-              if (options.rules["no-lookbehind"]) {
+              if (rules["no-lookbehind"]) {
                 matchedExpressions.push({
                   type: "lookbehind",
                   position: start,
@@ -84,7 +85,7 @@ function analyzeRegExpForLookaheadAndLookbehind(
             }
             // Negative Lookbehind
             if (input.charAt(current + 2) === "!") {
-              if (options.rules["no-negative-lookbehind"]) {
+              if (rules["no-negative-lookbehind"]) {
                 matchedExpressions.push({
                   type: "lookbehind",
                   negative: 1,
