@@ -17,21 +17,32 @@ export const DEFAULT_OPTIONS: AnalyzeOptions["rules"] = {
   "no-negative-lookbehind": 1,
 };
 
-export const getExpressionsToCheckFromConfiguration = (
-  conf: Rule.RuleContext["options"]
-): { rules: AnalyzeOptions["rules"]; useBrowserslist: boolean } => {
-  if (!conf.length) return { rules: DEFAULT_OPTIONS, useBrowserslist: true };
-  const [options, useBrowserslist = true] = conf as [AnalyzeOptions["rules"], boolean];
+export const DEFAULT_CONF: AnalyzeOptions["conf"] = {
+  browserslist: true,
+};
 
-  const validOptions: CheckableExpression[] = (
-    Object.keys(options || {}) as CheckableExpression[]
-  ).filter((option: unknown) => {
+function isPlainObject(obj: any) {
+  return Object.prototype.toString.call(obj) === "[object Object]";
+}
+
+export const getExpressionsToCheckFromConfiguration = (
+  options: Rule.RuleContext["options"]
+): { rules: AnalyzeOptions["rules"]; conf: AnalyzeOptions["conf"] } => {
+  if (!options.length) return { rules: DEFAULT_OPTIONS, conf: DEFAULT_CONF };
+  let rules: CheckableExpression[] = options;
+  let conf: AnalyzeOptions["conf"] = {};
+  if (isPlainObject(options[options.length - 1])) {
+    rules = options.slice(0, -1);
+    conf = options[options.length - 1];
+  }
+
+  const validOptions: CheckableExpression[] = rules.filter((option: unknown) => {
     if (typeof option !== "string") return false;
-    return option in DEFAULT_OPTIONS && options[option as keyof typeof DEFAULT_OPTIONS];
+    return DEFAULT_OPTIONS[option as keyof typeof DEFAULT_OPTIONS];
   });
 
   if (!validOptions.length) {
-    return { rules: DEFAULT_OPTIONS, useBrowserslist };
+    return { rules: DEFAULT_OPTIONS, conf };
   }
 
   const expressions = validOptions.reduce<AnalyzeOptions["rules"]>(
@@ -48,7 +59,7 @@ export const getExpressionsToCheckFromConfiguration = (
   );
   return {
     rules: expressions,
-    useBrowserslist,
+    conf,
   };
 };
 
@@ -67,7 +78,10 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
     const { targets, hasConfig } = collectBrowserTargets(context.getFilename(), browsers);
     // Lookahead assertions are part of JavaScript's original regular expression support and are thus supported in all browsers.
     const unsupportedTargets = collectUnsupportedTargets("js-regexp-lookbehind", targets);
-    const { rules, useBrowserslist } = getExpressionsToCheckFromConfiguration(context.options);
+    const {
+      rules,
+      conf: { browserslist },
+    } = getExpressionsToCheckFromConfiguration(context.options);
 
     // If there are no unsupported targets resolved from the browserslist config, then we can skip this rule
     if (!unsupportedTargets.length && hasConfig) return {};
@@ -82,11 +96,9 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
           input = node.regex.pattern;
         }
         if (input) {
-          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(input, {
-            rules,
-          });
+          const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(input, rules);
           if (unsupportedGroups.length === 0) return;
-          if (!useBrowserslist) {
+          if (!browserslist) {
             createContextReport(node, context, unsupportedGroups, unsupportedTargets);
             return;
           }

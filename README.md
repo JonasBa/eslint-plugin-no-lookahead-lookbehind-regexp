@@ -45,26 +45,24 @@ By default, the plugin will report on all lookahead and lookbehind regexp as wel
 rules: {
    'no-lookahead-lookbehind-regexp/no-lookahead-lookbehind-regexp': [
       'error',
-      {
-         'no-lookahead': 1,
-         'no-negative-lookbehind': 1,
-      }
+      'no-lookahead',
+      'no-lookbehind',
+      'no-negative-lookahead',
+      'no-negative-lookbehind',
    ],
 }
 ```
 
 ## 5. Disable Browserslist Support
 
-By default, the plugin will use yours project's browserslist settings to find availability of lookahead/lookbehind and their negative bros. However, if you want to disable this feature to report all usages as errors, you can pass a second rule options as false.
+By default, the plugin will use yours project's browserslist settings to find availability of lookahead/lookbehind and their negative counterparts. However, if you want to disable this feature to report all usages(still controlled by above rules settings) as errors, you can pass an additional object options.
 
 ```js
 rules: {
    'no-lookahead-lookbehind-regexp/no-lookahead-lookbehind-regexp': [
       'error',
-      {
-         'no-lookahead': 1,
-      },
-      false
+      'no-lookahead',
+      { browserslist: false },
    ],
 }
 ```
