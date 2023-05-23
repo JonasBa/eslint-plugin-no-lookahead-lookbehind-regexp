@@ -13,12 +13,13 @@ type BrowserTarget = {
 };
 
 // Collect all browser targets that may be defined as browserlistrc, eslint, package.json etc.
-export function collectBrowserTargets(
+export function findBrowserTargets(
   configPath: string,
   config?: { production: string[]; development: string[] } | Array<string> | string
-): { targets: BrowserTarget[]; hasConfig: boolean } {
+): { targets: BrowserTarget[]; inferredBrowsersListConfig: boolean } {
   const browserslistConfig = browserslist.findConfig(configPath);
-  const hasConfig = (browserslistConfig && browserslistConfig.defaults.length > 0) || false;
+  const inferredBrowsersListConfig =
+    (browserslistConfig && browserslistConfig.defaults.length > 0) || false;
   const targets = new Set<string>();
 
   function addTarget(target: string): void {
@@ -41,25 +42,25 @@ export function collectBrowserTargets(
   }
 
   // If user had eslint config and also has browserslist config, then merge the two
-  if (targets.size > 0 && hasConfig) {
+  if (targets.size > 0 && inferredBrowsersListConfig) {
     browserslist(undefined, { path: configPath }).forEach(addTarget);
-    return { targets: Array.from(targets).map(transformTarget), hasConfig };
+    return { targets: Array.from(targets).map(transformTarget), inferredBrowsersListConfig };
   }
 
   // If they only use an eslint config, then return what we have
-  if (targets.size > 0 && !hasConfig) {
-    return { targets: Array.from(targets).map(transformTarget), hasConfig };
+  if (targets.size > 0 && !inferredBrowsersListConfig) {
+    return { targets: Array.from(targets).map(transformTarget), inferredBrowsersListConfig };
   }
 
   // ** Warning
   // If they don't use a browserslist config, then return an empty targets array and disable the use of the regexp lookahead and lookbehind entirely.
-  if (!hasConfig) {
-    return { targets: [], hasConfig };
+  if (!inferredBrowsersListConfig) {
+    return { targets: [], inferredBrowsersListConfig };
   }
 
   browserslist(undefined, { path: configPath }).forEach(addTarget);
   // If we couldnt find anything, return empty targets and indicate that no config was found
-  return { targets: Array.from(targets).map(transformTarget), hasConfig };
+  return { targets: Array.from(targets).map(transformTarget), inferredBrowsersListConfig };
 }
 
 // Returns a list of browser targets that do not support a feature.
@@ -69,7 +70,7 @@ export function collectBrowserTargets(
 // this would be to throw an error, but since I dont know how often that happens or if it may cause false positives later on
 // if caniuse db changes... I'm leaning towards throwing an error here, but it's not the plugin's responsability to validate browserslist config - opinions are welcome.
 // TODO: check if browserslist throws an error lower in the stack if config is invalid, this would likely be the best solution
-export function collectUnsupportedTargets(id: string, targets: BrowserTarget[]): BrowserTarget[] {
+export function findUnsupportedTargets(id: string, targets: BrowserTarget[]): BrowserTarget[] {
   const data = lite.feature(lite.features[id]);
 
   if (!data) return [];
@@ -119,7 +120,7 @@ export function resolveCaniUseBrowserTarget(target: string): string {
 
 export function formatLinterMessage(
   violators: ReturnType<typeof analyzeRegExpForLookaheadAndLookbehind>,
-  targets: ReturnType<typeof collectUnsupportedTargets>,
+  targets: ReturnType<typeof findUnsupportedTargets>,
   config: AnalyzeOptions["config"]
 ): string {
   // If browser has no targets and we still want to report an error, it means that the feature is banned from use.
