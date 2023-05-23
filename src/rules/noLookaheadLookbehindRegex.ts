@@ -18,7 +18,7 @@ export const DEFAULT_OPTIONS: AnalyzeOptions["rules"] = {
 };
 
 export const DEFAULT_CONF: AnalyzeOptions["config"] = {
-  browserslist: true,
+  browserslist: false,
 };
 
 function isPlainObject(obj: any) {
@@ -48,6 +48,7 @@ export const getExpressionsToCheckFromConfiguration = (
 
   const expressions = validOptions.reduce<AnalyzeOptions["rules"]>(
     (acc: AnalyzeOptions["rules"], opt) => {
+      if (typeof opt !== "string") return acc;
       acc[opt as keyof typeof DEFAULT_OPTIONS] = 1;
       return acc;
     },
@@ -58,6 +59,7 @@ export const getExpressionsToCheckFromConfiguration = (
       "no-negative-lookbehind": 0,
     }
   );
+
   return {
     rules: expressions,
     config,
@@ -75,14 +77,17 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
     type: "problem",
   },
   create(context: Rule.RuleContext) {
-    const browsers = context.settings.browsers || context.settings.targets;
-    const { targets, hasConfig } = collectBrowserTargets(context.getFilename(), browsers);
+    const browsers: string[] = context.settings.browsers || context.settings.targets;
+    const { targets } = collectBrowserTargets(context.getFilename(), browsers);
     // Lookahead assertions are part of JavaScript's original regular expression support and are thus supported in all browsers.
     const unsupportedTargets = collectUnsupportedTargets("js-regexp-lookbehind", targets);
     const { rules, config } = getExpressionsToCheckFromConfiguration(context.options);
 
-    // If there are no unsupported targets resolved from the browserlist config, then we can skip this rule
-    if (!unsupportedTargets.length && hasConfig) return {};
+    // If browserslist or browser targets are set, disable the lookahead rule as it is supported in all browsers
+    if (config.browserslist || browsers?.length > 0) {
+      rules["no-lookahead"] = 0;
+      rules["no-negative-lookahead"] = 0;
+    }
 
     return {
       Literal(node: ESTree.Literal & Rule.NodeParentExtension): void {

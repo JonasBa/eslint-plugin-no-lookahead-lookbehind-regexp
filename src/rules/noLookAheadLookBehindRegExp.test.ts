@@ -13,8 +13,8 @@ const tester = new RuleTester({
 
 const groups = [
   { expression: "?=", type: "lookahead" },
-  { expression: "?<=", type: "lookbehind" },
   { expression: "?!", type: "negative lookahead" },
+  { expression: "?<=", type: "lookbehind" },
   { expression: "?<!", type: "negative lookbehind" },
 ];
 
@@ -79,7 +79,7 @@ tester.run("Caniuse: noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, 
     ...groups.map((g) => {
       return {
         code: `var str = "(${g.expression}foo)"`,
-        settings: { browser: "Chrome 96, Firefox 96" },
+        settings: { browsers: "Chrome 96, Firefox 96" },
       };
     }),
     ...groups.map((g) => `/\\(${g})/g`),
@@ -113,37 +113,42 @@ tester.run("Caniuse: noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, 
   ],
 });
 
-tester.run("Caniuse: iOS 16.3 lookahead", noLookaheadLookbehindRegexp, {
+const lookahead = [
+  { expression: "?=", type: "lookahead" },
+  { expression: "?!", type: "negative lookahead" },
+];
+new RuleTester({
+  parser: require.resolve("@typescript-eslint/parser"),
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
+}).run("Caniuse: targets or browserslist disables lookahead", noLookaheadLookbehindRegexp, {
   valid: [
-    // dont flag escaped sequences
-    {
-      code: `const ahead = /(?=1)/`,
-      settings: {
-        browsers: ["iOS 16.3"],
-      },
-    },
-    // {
-    //   code: `const aheadNegative = /(?!1)/`,
-    //   settings: {
-    //     browsers: ["iOS 16.3"],
-    //   },
-    // },
+    ...lookahead.map((g) => {
+      return {
+        code: `const regexp = /(${g.expression})/`,
+        settings: { browsers: "Chrome 96, Firefox 96" },
+      };
+    }),
+    ...lookahead.map((g) => {
+      return {
+        code: `const regexp = /(${g.expression})/`,
+        settings: { browserslist: true },
+      };
+    }),
+    ...lookahead.map((g) => {
+      return {
+        code: `const regexp = /(${g.expression})/`,
+        options: [
+          "error",
+          {
+            browserslist: true,
+          },
+        ],
+      };
+    }),
   ],
-  invalid: [
-    // dont flag escaped sequences
-    {
-      code: `const ahead = /(?=1)/`,
-      settings: {
-        browsers: ["iOS 16.0"],
-      },
-      errors: [{ message: "iOS Safari 16.0: unsupported lookahead match group at position 0" }],
-    },
-    // {
-    //   code: `const aheadNegative = /(?!1)/`,
-    //   settings: {
-    //     browsers: ["iOS 16.0"],
-    //   },
-    //   errors: [{ message: "DED" }],
-    // },
-  ],
+  invalid: [],
 });

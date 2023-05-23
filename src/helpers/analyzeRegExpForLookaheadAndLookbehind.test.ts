@@ -21,6 +21,38 @@ describe("analyzeRegExpForLookaheadAndLookbehind", () => {
   it.each([
     ["lookahead", 0, "(?=)"],
     ["negative lookahead", 0, "(?!)"],
+  ])(`when rules are enabled match %s - at %i`, (type, position, expression) => {
+    expect(
+      analyzeRegExpForLookaheadAndLookbehind(expression, {
+        "no-lookahead": 1,
+        "no-lookbehind": 0,
+        "no-negative-lookahead": 1,
+        "no-negative-lookbehind": 0,
+      })[0]
+    ).toEqual({
+      type: type.replace("negative ", ""),
+      position: position,
+      ...(type.includes("negative") ? { negative: 1 } : {}),
+    });
+  });
+
+  it.each([
+    ["lookahead", 0, "(?=)"],
+    ["negative lookahead", 0, "(?!)"],
+  ])(`when rules are disabled %s - at %i`, (_a, _b, expression) => {
+    expect(
+      analyzeRegExpForLookaheadAndLookbehind(expression, {
+        "no-lookahead": 0,
+        "no-lookbehind": 0,
+        "no-negative-lookahead": 0,
+        "no-negative-lookbehind": 0,
+      })[0]
+    ).toEqual(undefined);
+  });
+
+  it.each([
+    ["lookahead", 0, "(?=)"],
+    ["negative lookahead", 0, "(?!)"],
     ["lookbehind", 0, "(?<=)"],
     ["negative lookbehind", 0, "(?<!)"],
   ])(`Single match %s - at %i`, (type, position, expression) => {

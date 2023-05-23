@@ -16,9 +16,8 @@ type BrowserTarget = {
 export function collectBrowserTargets(
   configPath: string,
   config?: { production: string[]; development: string[] } | Array<string> | string
-): { targets: BrowserTarget[]; hasConfig: boolean } {
+): { targets: BrowserTarget[]; browserslist: browserslist.Config | undefined } {
   const browserslistConfig = browserslist.findConfig(configPath);
-  const hasConfig = (browserslistConfig && browserslistConfig.defaults.length > 0) || false;
   const targets = new Set<string>();
 
   function addTarget(target: string): void {
@@ -41,25 +40,25 @@ export function collectBrowserTargets(
   }
 
   // If user had eslint config and also has browserslist config, then merge the two
-  if (targets.size > 0 && hasConfig) {
+  if (targets.size > 0 && browserslistConfig) {
     browserslist(undefined, { path: configPath }).forEach(addTarget);
-    return { targets: Array.from(targets).map(transformTarget), hasConfig };
+    return { targets: Array.from(targets).map(transformTarget), browserslist: browserslistConfig };
   }
 
   // If they only use an eslint config, then return what we have
-  if (targets.size > 0 && !hasConfig) {
-    return { targets: Array.from(targets).map(transformTarget), hasConfig };
+  if (targets.size > 0 && !browserslistConfig) {
+    return { targets: Array.from(targets).map(transformTarget), browserslist: browserslistConfig };
   }
 
   // ** Warning
   // If they don't use a browserslist config, then return an empty targets array and disable the use of the regexp lookahead and lookbehind entirely.
-  if (!hasConfig) {
-    return { targets: [], hasConfig };
+  if (!browserslistConfig) {
+    return { targets: [], browserslist: browserslistConfig };
   }
 
   browserslist(undefined, { path: configPath }).forEach(addTarget);
   // If we couldnt find anything, return empty targets and indicate that no config was found
-  return { targets: Array.from(targets).map(transformTarget), hasConfig };
+  return { targets: Array.from(targets).map(transformTarget), browserslist: browserslistConfig };
 }
 
 // Returns a list of browser targets that do not support a feature.
@@ -123,7 +122,7 @@ export function formatLinterMessage(
   config: AnalyzeOptions["config"]
 ): string {
   // If browser has no targets and we still want to report an error, it means that the feature is banned from use.
-  if (!targets.length || config.browserslist === false) {
+  if (!targets.length || (config.browserslist === false && !targets.length)) {
     if (violators.length === 1) {
       return `Disallowed ${violators[0].negative ? "negative " : ""}${
         violators[0].type
