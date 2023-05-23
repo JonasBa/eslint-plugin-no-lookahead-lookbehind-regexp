@@ -16,8 +16,9 @@ type BrowserTarget = {
 export function collectBrowserTargets(
   configPath: string,
   config?: { production: string[]; development: string[] } | Array<string> | string
-): { targets: BrowserTarget[]; browserslist: browserslist.Config | undefined } {
+): { targets: BrowserTarget[]; hasConfig: boolean } {
   const browserslistConfig = browserslist.findConfig(configPath);
+  const hasConfig = (browserslistConfig && browserslistConfig.defaults.length > 0) || false;
   const targets = new Set<string>();
 
   function addTarget(target: string): void {
@@ -40,25 +41,25 @@ export function collectBrowserTargets(
   }
 
   // If user had eslint config and also has browserslist config, then merge the two
-  if (targets.size > 0 && browserslistConfig) {
+  if (targets.size > 0 && hasConfig) {
     browserslist(undefined, { path: configPath }).forEach(addTarget);
-    return { targets: Array.from(targets).map(transformTarget), browserslist: browserslistConfig };
+    return { targets: Array.from(targets).map(transformTarget), hasConfig };
   }
 
   // If they only use an eslint config, then return what we have
-  if (targets.size > 0 && !browserslistConfig) {
-    return { targets: Array.from(targets).map(transformTarget), browserslist: browserslistConfig };
+  if (targets.size > 0 && !hasConfig) {
+    return { targets: Array.from(targets).map(transformTarget), hasConfig };
   }
 
   // ** Warning
   // If they don't use a browserslist config, then return an empty targets array and disable the use of the regexp lookahead and lookbehind entirely.
-  if (!browserslistConfig) {
-    return { targets: [], browserslist: browserslistConfig };
+  if (!hasConfig) {
+    return { targets: [], hasConfig };
   }
 
   browserslist(undefined, { path: configPath }).forEach(addTarget);
   // If we couldnt find anything, return empty targets and indicate that no config was found
-  return { targets: Array.from(targets).map(transformTarget), browserslist: browserslistConfig };
+  return { targets: Array.from(targets).map(transformTarget), hasConfig };
 }
 
 // Returns a list of browser targets that do not support a feature.

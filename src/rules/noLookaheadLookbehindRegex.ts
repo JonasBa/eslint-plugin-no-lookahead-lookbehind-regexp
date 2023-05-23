@@ -78,7 +78,7 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
   },
   create(context: Rule.RuleContext) {
     const browsers: string[] = context.settings.browsers || context.settings.targets;
-    const { targets } = collectBrowserTargets(context.getFilename(), browsers);
+    const { targets, hasConfig } = collectBrowserTargets(context.getFilename(), browsers);
     // Lookahead assertions are part of JavaScript's original regular expression support and are thus supported in all browsers.
     const unsupportedTargets = collectUnsupportedTargets("js-regexp-lookbehind", targets);
     const { rules, config } = getExpressionsToCheckFromConfiguration(context.options);
@@ -88,6 +88,8 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
       rules["no-lookahead"] = 0;
       rules["no-negative-lookahead"] = 0;
     }
+
+    if (!unsupportedTargets.length && hasConfig) return {};
 
     return {
       Literal(node: ESTree.Literal & Rule.NodeParentExtension): void {
