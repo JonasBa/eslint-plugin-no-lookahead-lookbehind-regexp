@@ -112,3 +112,38 @@ tester.run("Caniuse: noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, 
     },
   ],
 });
+
+tester.run("Caniuse: iOS 16.3 lookahead", noLookaheadLookbehindRegexp, {
+  valid: [
+    // dont flag escaped sequences
+    {
+      code: `const ahead = /(?=1)/`,
+      settings: {
+        browsers: ["iOS 16.3"],
+      },
+    },
+    // {
+    //   code: `const aheadNegative = /(?!1)/`,
+    //   settings: {
+    //     browsers: ["iOS 16.3"],
+    //   },
+    // },
+  ],
+  invalid: [
+    // dont flag escaped sequences
+    {
+      code: `const ahead = /(?=1)/`,
+      settings: {
+        browsers: ["iOS 16.0"],
+      },
+      errors: [{ message: "iOS Safari 16.0: unsupported lookahead match group at position 0" }],
+    },
+    // {
+    //   code: `const aheadNegative = /(?!1)/`,
+    //   settings: {
+    //     browsers: ["iOS 16.0"],
+    //   },
+    //   errors: [{ message: "DED" }],
+    // },
+  ],
+});

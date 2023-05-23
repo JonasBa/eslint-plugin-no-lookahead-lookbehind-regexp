@@ -24,30 +24,26 @@ function analyzeRegExpForLookaheadAndLookbehind(
   if (input.length < 4) return [];
   let current = 0;
 
-  const peek = (): string => input.charAt(current + 1);
   const advance = (): string => input.charAt(++current);
-  const isEnd = () => current > input.length;
-  const isEscaped = (): boolean => input.charAt(current - 1) === "\\";
-
   const matchedExpressions: UnsupportedExpression[] = [];
 
-  while (!isEnd()) {
+  while (current < input.length) {
     const start = current;
     const char = input.charAt(start);
 
     switch (char) {
       case "(": {
         // If first char is ( then the sequence cannot be escaped.
-        if (current > 0 && isEscaped()) {
+        if (current > 0 && input.charAt(current - 1) === "\\") {
           advance();
           break;
         }
 
-        if (peek() === "?") {
+        if (input.charAt(current + 1) === "?") {
           advance();
 
           // Lookahead
-          if (peek() === "=") {
+          if (input.charAt(current + 1) === "=") {
             if (rules["no-lookahead"]) {
               matchedExpressions.push({
                 type: "lookahead",
@@ -58,7 +54,7 @@ function analyzeRegExpForLookaheadAndLookbehind(
             break;
           }
           // Negative lookahead
-          if (peek() === "!") {
+          if (input.charAt(current + 1) === "!") {
             if (rules["no-negative-lookahead"]) {
               matchedExpressions.push({
                 type: "lookahead",
@@ -71,7 +67,7 @@ function analyzeRegExpForLookaheadAndLookbehind(
           }
 
           // Lookbehind
-          if (peek() === "<") {
+          if (input.charAt(current + 1) === "<") {
             if (input.charAt(current + 2) === "=") {
               if (rules["no-lookbehind"]) {
                 matchedExpressions.push({
