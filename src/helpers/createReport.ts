@@ -7,8 +7,12 @@ import {
 } from "../helpers/analyzeRegExpForLookaheadAndLookbehind";
 import { collectUnsupportedTargets, formatLinterMessage } from "../helpers/caniuse";
 
+type NodeToReport =
+  | (ESTree.Literal & Rule.NodeParentExtension)
+  | (ESTree.TemplateLiteral & Rule.NodeParentExtension);
+
 export function createContextReport(
-  node: ESTree.Literal & Rule.NodeParentExtension,
+  node: NodeToReport,
   context: Rule.RuleContext,
   violators: ReturnType<typeof analyzeRegExpForLookaheadAndLookbehind>,
   targets: ReturnType<typeof collectUnsupportedTargets>,

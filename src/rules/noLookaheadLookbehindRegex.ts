@@ -7,7 +7,7 @@ import {
   CheckableExpression,
 } from "../helpers/analyzeRegExpForLookaheadAndLookbehind";
 import { collectBrowserTargets, collectUnsupportedTargets } from "../helpers/caniuse";
-import { isStringLiteralRegExp, isRegExpLiteral } from "../helpers/ast";
+import { isStringLiteralRegExp, isRegExpLiteral, isBinaryExpression } from "../helpers/ast";
 import { createContextReport } from "../helpers/createReport";
 
 export const DEFAULT_OPTIONS: AnalyzeOptions["rules"] = {
@@ -85,8 +85,25 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
     if (!unsupportedTargets.length && hasConfig) return {};
 
     return {
+      TemplateLiteral(node: ESTree.TemplateLiteral & Rule.NodeParentExtension): void {
+        for (let quasi of node.quasis) {
+          if (typeof quasi.value.raw === "string") {
+            const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(
+              quasi.value.raw,
+              rules // For string literals, we need to pass the raw value which includes escape characters.
+            );
+
+            if (unsupportedGroups.length > 0) {
+              createContextReport(node, context, unsupportedGroups, unsupportedTargets, config);
+            }
+          }
+        }
+      },
       Literal(node: ESTree.Literal & Rule.NodeParentExtension): void {
-        if (isStringLiteralRegExp(node) && typeof node.raw === "string") {
+        if (
+          (isStringLiteralRegExp(node) || isBinaryExpression(node)) &&
+          typeof node.raw === "string"
+        ) {
           const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(
             node.raw,
             rules // For string literals, we need to pass the raw value which includes escape characters.

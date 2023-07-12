@@ -70,6 +70,56 @@ tester.run("noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, {
         ],
       };
     }),
+    ...groups.map((g) => {
+      return {
+        code: `new RegExp("(${g.expression})" + "")`,
+        errors: [
+          {
+            message: `Disallowed ${g.type} match group at position 1`,
+          },
+        ],
+      };
+    }),
+    ...groups.map((g) => {
+      return {
+        code: `new RegExp("" + "(${g.expression})")`,
+        errors: [
+          {
+            message: `Disallowed ${g.type} match group at position 1`,
+          },
+        ],
+      };
+    }),
+    ...groups.map((g) => {
+      return {
+        code: `new RegExp("" + "(${g.expression})" + "")`,
+        errors: [
+          {
+            message: `Disallowed ${g.type} match group at position 1`,
+          },
+        ],
+      };
+    }),
+    ...groups.map((g) => {
+      return {
+        code: `new RegExp(\`(${g.expression})\`)`,
+        errors: [
+          {
+            message: `Disallowed ${g.type} match group at position 0`,
+          },
+        ],
+      };
+    }),
+    ...groups.map((g) => {
+      return {
+        code: `new RegExp(\`some expression (${g.expression})\`)`,
+        errors: [
+          {
+            message: `Disallowed ${g.type} match group at position 16`,
+          },
+        ],
+      };
+    }),
   ],
 });
 
