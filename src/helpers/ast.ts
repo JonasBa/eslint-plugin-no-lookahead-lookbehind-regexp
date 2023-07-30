@@ -15,3 +15,7 @@ export function isStringLiteralRegExp(literal: Literal & Rule.NodeParentExtensio
     literal.parent.callee.name === "RegExp"
   );
 }
+
+export function isBinaryExpression(literal: Literal & Rule.NodeParentExtension) {
+  return literal.parent !== null && literal.parent.type === "BinaryExpression";
+}
