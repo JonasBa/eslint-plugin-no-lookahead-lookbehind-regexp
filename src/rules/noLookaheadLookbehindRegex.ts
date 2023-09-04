@@ -6,9 +6,12 @@ import {
   AnalyzeOptions,
   CheckableExpression,
 } from "../helpers/analyzeRegExpForLookaheadAndLookbehind";
-import { collectBrowserTargets, collectUnsupportedTargets } from "../helpers/caniuse";
+import {
+  findBrowserTargets,
+  findUnsupportedTargets,
+  formatLinterMessage,
+} from "../helpers/caniuse";
 import { isStringLiteralRegExp, isRegExpLiteral } from "../helpers/ast";
-import { createContextReport } from "../helpers/createReport";
 
 export const DEFAULT_OPTIONS: AnalyzeOptions["rules"] = {
   "no-lookahead": 1,
@@ -43,7 +46,7 @@ export const getExpressionsToCheckFromConfiguration = (
   });
 
   if (!validOptions.length) {
-    return { rules: DEFAULT_OPTIONS, config };
+    return { rules: { ...DEFAULT_OPTIONS }, config };
   }
 
   const expressions = validOptions.reduce<AnalyzeOptions["rules"]>(
@@ -75,14 +78,25 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
     type: "problem",
   },
   create(context: Rule.RuleContext) {
+    console.log("create", context);
     const browsers = context.settings.browsers || context.settings.targets;
-    const { targets, hasConfig } = collectBrowserTargets(context.getFilename(), browsers);
-    // Lookahead assertions are part of JavaScript's original regular expression support and are thus supported in all browsers.
-    const unsupportedTargets = collectUnsupportedTargets("js-regexp-lookbehind", targets);
-    const { rules, config } = getExpressionsToCheckFromConfiguration(context.options);
+    const { targets, inferredBrowsersListConfig } = findBrowserTargets(
+      context.getFilename(),
+      browsers
+    );
 
-    // If there are no unsupported targets resolved from the browserlist config, then we can skip this rule
-    if (!unsupportedTargets.length && hasConfig) return {};
+    // Lookahead assertions are part of JavaScript's original regular expression support and are thus supported in all browsers.
+    const { rules, config } = getExpressionsToCheckFromConfiguration(context.options);
+    const unsupportedTargets = findUnsupportedTargets("js-regexp-lookbehind", targets);
+
+    // If no unsupported targets are found, but the user has provided a config, then there is nothing to do
+    if (!unsupportedTargets.length && inferredBrowsersListConfig) return {};
+    if (!unsupportedTargets.length && browsers) return {};
+
+    if (config.browserslist === true) {
+      rules["no-lookahead"] = 0;
+      rules["no-negative-lookahead"] = 0;
+    }
 
     return {
       Literal(node: ESTree.Literal & Rule.NodeParentExtension): void {
@@ -92,15 +106,22 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
             rules // For string literals, we need to pass the raw value which includes escape characters.
           );
           if (unsupportedGroups.length > 0) {
-            createContextReport(node, context, unsupportedGroups, unsupportedTargets, config);
+            context.report({
+              node: node,
+              message: formatLinterMessage(unsupportedGroups, targets, config),
+            });
           }
         } else if (isRegExpLiteral(node)) {
           const unsupportedGroups = analyzeRegExpForLookaheadAndLookbehind(
             node.regex.pattern,
             rules
           );
+
           if (unsupportedGroups.length > 0) {
-            createContextReport(node, context, unsupportedGroups, unsupportedTargets, config);
+            context.report({
+              node: node,
+              message: formatLinterMessage(unsupportedGroups, targets, config),
+            });
           }
         }
       },
