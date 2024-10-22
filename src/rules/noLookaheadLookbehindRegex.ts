@@ -72,6 +72,39 @@ const noLookaheadLookbehindRegexp: Rule.RuleModule = {
       category: "Compatibility",
       recommended: true,
     },
+    schema: {
+      type: "array",
+      items: [
+        {
+          oneOf: [
+            {
+              type: "string",
+              enum: ["off", "warn", "error"],
+            },
+            {
+              type: "string",
+              enum: [
+                "no-lookahead",
+                "no-lookbehind",
+                "no-negative-lookahead",
+                "no-negative-lookbehind",
+              ],
+            },
+            {
+              type: "object",
+              properties: {
+                browserslist: {
+                  type: "boolean",
+                },
+              },
+              additionalProperties: false,
+            },
+          ],
+        },
+      ],
+      minItems: 0,
+      maxItems: 6,
+    },
     type: "problem",
   },
   create(context: Rule.RuleContext) {
