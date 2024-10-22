@@ -1,6 +1,7 @@
 import Benchmark from "benchmark";
 import { ESLint } from "eslint";
 import fs from "fs";
+import parser from "@typescript-eslint/parser";
 
 // Save the contents of our old pkg json to a variable
 const packageJSON = JSON.parse(fs.readFileSync("./package.json", "utf8").toString());
@@ -11,8 +12,9 @@ process.on("uncaughtException", () => {
 const config = {
   baseConfig: {
     root: true,
-    parser: "@typescript-eslint/parser",
-    extends: ["plugin:eslint-plugin/recommended", "plugin:prettier/recommended"],
+    languageOptions: {
+      parser,
+    },
     env: {
       browser: true,
     },
