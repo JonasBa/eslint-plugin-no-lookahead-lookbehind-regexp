@@ -3,7 +3,10 @@
   "version": "0.4.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "repository": "git@github.com:JonasBa/eslint-plugin-no-lookahead-lookbehind-regexp.git",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/JonasBa/eslint-plugin-no-lookahead-lookbehind-regexp.git"
+  },
   "author": "JonasBa",
   "license": "MIT",
   "dependencies": {
