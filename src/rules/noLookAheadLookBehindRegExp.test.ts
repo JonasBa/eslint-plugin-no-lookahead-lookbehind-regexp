@@ -23,9 +23,19 @@ const groups = [
 tester.run("noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, {
   valid: [
     // dont flag string values when they are not used in combination with RegExp
-    ...groups.map((g) => `var str = "(${g.expression}foo)"`),
+    ...groups.map((g) => {
+      return {
+        name: `valid-${g.type}`,
+        code: `var str = "(${g.expression}foo)"`,
+      };
+    }),
     // dont flag escaped sequences
-    ...groups.map((g) => `/\\(${g})/g`),
+    ...groups.map((g) => {
+      return {
+        name: `valid-escaped-${g.type}`,
+        code: `/\\(${g.expression})/g`,
+      };
+    }),
   ],
   invalid: [
     // When initializing with a literal
@@ -84,7 +94,7 @@ tester.run("Caniuse: noLookaheadLookbehindRegexp", noLookaheadLookbehindRegexp, 
         settings: { browser: "Chrome 96, Firefox 96" },
       };
     }),
-    ...groups.map((g) => `/\\(${g})/g`),
+    ...groups.map((g) => `/\\(${g.expression})/g`),
   ],
   invalid: [
     {
